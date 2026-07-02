@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notre album</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --fond:    #14110f;
+    --fond-2:  #1c1815;
+    --ivoire:  #ede6da;
+    --estompe: #a49a8c;
+    --laiton:  #c9a24b;
+    --cadre:   rgba(237,230,218,.10);
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html{ scroll-behavior:smooth; }
+  body{
+    background:var(--fond); color:var(--ivoire);
+    font-family:"Inter", system-ui, sans-serif;
+    -webkit-font-smoothing:antialiased; overflow-x:hidden;
+  }
+  body::before{
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:1;
+    background:radial-gradient(120% 90% at 50% 25%, transparent 55%, rgba(0,0,0,.45) 100%);
+  }
+  .progression{
+    position:fixed; top:0; left:0; height:3px; width:0%;
+    background:linear-gradient(90deg, var(--laiton), #e9c877);
+    z-index:50; transition:width .1s linear;
+  }
+
+  /* ── En-tête ────────────────────────────────────────────────────────── */
+  .entete{ text-align:center; padding:11vh 6vw 5vh; position:relative; z-index:2; }
+  .entete .eyebrow{
+    font-size:.78rem; letter-spacing:.42em; text-transform:uppercase;
+    color:var(--laiton); margin-bottom:1.4rem; font-weight:500; padding-left:.42em;
+  }
+  .entete h1{
+    font-family:"Fraunces", serif; font-weight:300;
+    font-size:clamp(2.6rem, 7vw, 5.5rem); line-height:1.05;
+  }
+  .entete .sous-titre{
+    font-family:"Fraunces", serif; font-style:italic;
+    color:var(--estompe); font-size:clamp(1rem, 2.4vw, 1.4rem); margin-top:1.4rem;
+  }
+
+  /* ── Les 3 cartes ───────────────────────────────────────────────────── */
+  .grille{
+    position:relative; z-index:2;
+    display:grid; grid-template-columns:repeat(3, 1fr);
+    gap:clamp(1.2rem, 3vw, 2.5rem);
+    max-width:1400px; margin:0 auto; padding:2vh 5vw 6vh;
+  }
+  @media (max-width:840px){ .grille{ grid-template-columns:1fr; max-width:640px; } }
+
+  .carte{
+    display:block; width:100%; text-align:inherit; cursor:pointer;
+    background:none; border:none; color:inherit; font:inherit; padding:0;
+    transition:transform .45s cubic-bezier(.2,.7,.2,1);
+  }
+  .carte:hover{ transform:translateY(-8px); }
+  .carte .visuel{
+    position:relative; overflow:hidden; border-radius:3px;
+    aspect-ratio:4/5; background:var(--fond-2);
+    box-shadow:0 24px 60px -18px rgba(0,0,0,.7), 0 0 0 1px var(--cadre);
+    transition:box-shadow .4s;
+  }
+  .carte.active .visuel{ box-shadow:0 24px 60px -18px rgba(0,0,0,.7), 0 0 0 2px var(--laiton); }
+  .carte .visuel img{
+    width:100%; height:100%; object-fit:cover; display:block;
+    transition:transform .8s cubic-bezier(.2,.7,.2,1);
+  }
+  .carte:hover .visuel img{ transform:scale(1.05); }
+  .carte .visuel::after{
+    content:""; position:absolute; inset:0;
+    background:linear-gradient(180deg, transparent 60%, rgba(0,0,0,.45));
+    opacity:.7; transition:opacity .5s;
+  }
+  .carte:hover .visuel::after{ opacity:.35; }
+  .carte .numero{
+    position:absolute; top:1rem; left:1.1rem; z-index:2;
+    font-family:"Fraunces", serif; font-weight:300;
+    font-size:2.4rem; color:var(--ivoire); opacity:.85; line-height:1;
+    text-shadow:0 2px 14px rgba(0,0,0,.6);
+  }
+  .carte .infos{ text-align:center; padding:1.4rem .6rem 0; }
+  .carte .titre-carte{
+    font-family:"Fraunces", serif; font-weight:500;
+    font-size:clamp(1.25rem, 2.6vw, 1.6rem);
+  }
+  .carte .texte-carte{
+    font-family:"Fraunces", serif; font-style:italic;
+    color:var(--estompe); font-size:clamp(.95rem, 2vw, 1.1rem);
+    margin-top:.5rem; line-height:1.55;
+  }
+  .carte .voir{
+    display:inline-block; margin-top:.9rem;
+    font-size:.72rem; letter-spacing:.28em; text-transform:uppercase;
+    color:var(--laiton); font-weight:500;
+    border-bottom:1px solid rgba(201,162,75,.35); padding-bottom:.25rem;
+    transition:border-color .3s;
+  }
+  .carte:hover .voir, .carte.active .voir{ border-color:var(--laiton); }
+
+  /* ── Zone album (déployée sous les cartes) ──────────────────────────── */
+  #zone{ position:relative; z-index:2; }
+  .album-entete{
+    text-align:center; padding:5vh 6vw 1vh;
+    border-top:1px solid var(--cadre); margin-top:2vh;
+  }
+  .album-entete .fil{
+    font-size:.72rem; letter-spacing:.3em; text-transform:uppercase;
+    color:var(--laiton); font-weight:500;
+  }
+  .album-entete h2{
+    font-family:"Fraunces", serif; font-weight:300;
+    font-size:clamp(2rem, 6vw, 4rem); margin-top:1rem;
+  }
+  .album-entete .st{
+    font-family:"Fraunces", serif; font-style:italic;
+    color:var(--estompe); font-size:clamp(1rem,2.4vw,1.35rem); margin-top:1rem;
+  }
+  .fermer{
+    margin-top:1.6rem; background:transparent; color:var(--ivoire);
+    border:1px solid var(--cadre); border-radius:100px;
+    padding:.55rem 1.3rem; font-family:inherit; font-size:.72rem;
+    letter-spacing:.16em; text-transform:uppercase; cursor:pointer;
+    transition:border-color .3s, color .3s;
+  }
+  .fermer:hover{ border-color:var(--laiton); color:var(--laiton); }
+
+  .chapitre{
+    min-height:96svh; display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    padding:6vh 5vw; gap:1.5rem;
+  }
+  .cadre{ position:relative; }
+  .cadre img{
+    display:block; max-width:min(1080px, 92vw); max-height:76svh;
+    width:auto; height:auto; border-radius:2px;
+    box-shadow:0 30px 80px -20px rgba(0,0,0,.75), 0 0 0 1px var(--cadre);
+  }
+  .num{
+    position:absolute; top:-2.4rem; left:-.4rem;
+    font-family:"Fraunces", serif; font-weight:300;
+    font-size:clamp(3rem, 8vw, 5.5rem);
+    color:var(--laiton); opacity:.25; line-height:1; user-select:none;
+  }
+  .legende{ max-width:min(900px, 92vw); text-align:center; }
+  .legende .compteur{
+    font-size:.72rem; letter-spacing:.3em; text-transform:uppercase;
+    color:var(--laiton); font-weight:500;
+  }
+  .legende .texte{
+    font-family:"Fraunces", serif; font-style:italic; font-weight:400;
+    color:var(--ivoire); font-size:clamp(1.1rem, 2.4vw, 1.5rem);
+    margin-top:.6rem; line-height:1.55;
+  }
+  @media (prefers-reduced-motion:no-preference){
+    .anim{ opacity:0; transform:translateY(30px);
+           transition:opacity .9s cubic-bezier(.2,.7,.2,1), transform .9s cubic-bezier(.2,.7,.2,1); }
+    .vu .anim{ opacity:1; transform:none; }
+  }
+  .album-fin{
+    text-align:center; padding:5vh 6vw 12vh;
+    font-family:"Fraunces", serif; font-style:italic; font-weight:300;
+    font-size:clamp(1.3rem, 3.5vw, 2rem); color:var(--estompe);
+  }
+  :focus-visible{ outline:2px solid var(--laiton); outline-offset:4px; }
+</style>
+</head>
+<body>
+
+<div class="progression" id="progression"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     ▛ ZONE À MODIFIER — tous les titres et textes sont plus bas, dans la
+       partie <script>, dans l'objet « ALBUMS ». Cherchez « À MODIFIER ». ▟
+════════════════════════════════════════════════════════════════════════ -->
+
+<header class="entete">
+  <div class="eyebrow">Album</div>
+  <h1 id="titre-site">Notre album</h1>
+  <p class="sous-titre" id="soustitre-site">Trois chapitres, une histoire.</p>
+</header>
+
+<main class="grille" id="grille"></main>
+
+<section id="zone"></section>
+
+<script>
+/* ════════════════════════════════════════════════════════════════════════
+   ▛▛▛  À MODIFIER — TITRES ET TEXTES  ▟▟▟
+
+   Il n'y a QUE ce bloc à changer. Pour chaque album (chapitre) :
+     • titre    = le grand titre du chapitre
+     • texte    = la phrase affichée sous l'image sur la page d'accueil
+     • sousTitre= la phrase affichée en haut de l'album quand il est ouvert
+     • legendes = le texte sous CHAQUE photo (la clé = le numéro de la photo)
+
+   Pour écrire : remplacez « Texte à compléter » par votre phrase,
+   en gardant les guillemets. Mettez "" pour ne rien afficher.
+════════════════════════════════════════════════════════════════════════ */
+
+const TITRE_SITE     = "Notre album";
+const SOUS_TITRE_SITE = "Trois chapitres, une histoire.";
+
+const ALBUMS = [
+  {
+    titre:    "Titre à compléter",              // ← Chapitre 1
+    texte:    "Texte à compléter",              // ← sous l'image d'accueil
+    sousTitre:"Sous-titre à compléter",         // ← en tête de l'album ouvert
+    dossier:  "photos/album1",
+    legendes: { 1:"Texte à compléter", 2:"Texte à compléter", 3:"Texte à compléter", 4:"Texte à compléter", 5:"Texte à compléter", 6:"Texte à compléter", 7:"Texte à compléter", 8:"Texte à compléter", 9:"Texte à compléter", 10:"Texte à compléter", 11:"Texte à compléter" },
+  },
+  {
+    titre:    "Titre à compléter",              // ← Chapitre 2
+    texte:    "Texte à compléter",
+    sousTitre:"Sous-titre à compléter",
+    dossier:  "photos/album2",
+    legendes: { 1:"Texte à compléter", 2:"Texte à compléter", 3:"Texte à compléter", 4:"Texte à compléter", 5:"Texte à compléter", 6:"Texte à compléter", 7:"Texte à compléter", 8:"Texte à compléter", 9:"Texte à compléter", 10:"Texte à compléter" },
+  },
+  {
+    titre:    "Titre à compléter",              // ← Chapitre 3
+    texte:    "Texte à compléter",
+    sousTitre:"Sous-titre à compléter",
+    dossier:  "photos/album3",
+    legendes: { 1:"Texte à compléter", 2:"Texte à compléter", 3:"Texte à compléter", 4:"Texte à compléter", 5:"Texte à compléter", 6:"Texte à compléter", 7:"Texte à compléter", 8:"Texte à compléter", 9:"Texte à compléter", 10:"Texte à compléter" },
+  },
+];
+
+/* ════════════════════════════════════════════════════════════════════════
+   ▛ Vous pouvez arrêter ici — le reste fonctionne tout seul. ▟
+
+   COMMENT ÇA MARCHE
+   • Les photos de chaque chapitre sont dans son dossier (photos/album1…).
+     Elles s'appellent 1.jpg, 2.jpg, 3.jpg… et s'affichent dans cet ordre.
+   • Pour CHANGER L'ORDRE : renommez le numéro d'un fichier.
+   • La photo 1.jpg de chaque dossier sert d'image sur la page d'accueil.
+   • Pour AJOUTER une photo : mettez-la dans le dossier avec le numéro suivant
+     (et ajoutez sa légende dans « legendes » ci-dessus).
+════════════════════════════════════════════════════════════════════════ */
+
+const EXT = "jpg";
+const TROUS_TOLERES = 4, BORNE_MAX = 300;
+let albumOuvert = -1;
+
+document.getElementById('titre-site').textContent = TITRE_SITE;
+document.getElementById('soustitre-site').textContent = SOUS_TITRE_SITE;
+
+function esc(s){ return String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+const ROM = ["I","II","III","IV","V","VI","VII","VIII","IX","X"];
+
+/* Construire les 3 cartes de l'accueil */
+function construireCartes(){
+  const g = document.getElementById('grille');
+  ALBUMS.forEach((a, idx)=>{
+    const b = document.createElement('button');
+    b.className = 'carte'; b.type = 'button'; b.dataset.idx = idx;
+    b.innerHTML = `
+      <div class="visuel">
+        <span class="numero">${ROM[idx]||idx+1}</span>
+        <img src="${a.dossier}/1.${EXT}" alt="${esc(a.titre)}" loading="lazy">
+      </div>
+      <div class="infos">
+        <div class="titre-carte">${esc(a.titre)}</div>
+        <div class="texte-carte">${esc(a.texte)}</div>
+        <span class="voir">Voir l'album</span>
+      </div>`;
+    b.addEventListener('click', ()=>ouvrirAlbum(idx));
+    g.appendChild(b);
+  });
+}
+
+function chargeImage(src){
+  return new Promise(res=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=()=>res(null); i.src=src; });
+}
+async function trouverPhotos(dossier){
+  const t=[]; let manq=0;
+  for(let n=1;n<=BORNE_MAX;n++){
+    const src=`${dossier}/${n}.${EXT}`;
+    const img=await chargeImage(src);
+    if(img){ t.push({n,src,w:img.naturalWidth,h:img.naturalHeight}); manq=0; }
+    else{ manq++; if(manq>TROUS_TOLERES && t.length) break; if(n>20 && !t.length) break; }
+  }
+  return t;
+}
+
+async function ouvrirAlbum(idx){
+  const zone = document.getElementById('zone');
+
+  // Re-cliquer sur la carte déjà ouverte => on referme
+  if(albumOuvert === idx){ fermerAlbum(); return; }
+  albumOuvert = idx;
+
+  document.querySelectorAll('.carte').forEach(c=>c.classList.toggle('active', +c.dataset.idx===idx));
+
+  const a = ALBUMS[idx];
+  zone.innerHTML = `<div class="album-entete">
+      <div class="fil">Chapitre ${ROM[idx]||idx+1}</div>
+      <h2>${esc(a.titre)}</h2>
+      ${a.sousTitre ? `<p class="st">${esc(a.sousTitre)}</p>` : ''}
+      <button class="fermer" onclick="fermerAlbum()">Fermer ce chapitre ✕</button>
+    </div>
+    <div class="album-chargement" style="text-align:center;padding:6vh;color:var(--estompe);font-style:italic;">Chargement…</div>`;
+
+  // amener l'album à l'écran
+  zone.querySelector('.album-entete').scrollIntoView({behavior:'smooth', block:'start'});
+
+  const photos = await trouverPhotos(a.dossier);
+  const chargement = zone.querySelector('.album-chargement');
+  if(chargement) chargement.remove();
+
+  if(!photos.length){
+    zone.insertAdjacentHTML('beforeend',
+      `<div style="text-align:center;padding:8vh;color:var(--estompe);font-style:italic;">Aucune photo dans ce dossier.</div>`);
+    return;
+  }
+
+  const total = photos.length;
+  const frag = document.createDocumentFragment();
+  photos.forEach((p,i)=>{
+    const leg = (a.legendes[p.n] || '').trim();
+    const sec = document.createElement('section');
+    sec.className = 'chapitre';
+    sec.innerHTML = `
+      <div class="cadre anim">
+        <span class="num">${String(p.n).padStart(2,'0')}</span>
+        <img src="${p.src}" alt="Photo ${p.n}" loading="lazy" width="${p.w}" height="${p.h}">
+      </div>
+      <div class="legende anim">
+        <div class="compteur">${String(i+1).padStart(2,'0')} — ${String(total).padStart(2,'0')}</div>
+        ${leg ? `<div class="texte">${esc(leg)}</div>` : ''}
+      </div>`;
+    frag.appendChild(sec);
+  });
+  const fin = document.createElement('div');
+  fin.className = 'album-fin';
+  fin.textContent = 'Fin du chapitre.';
+  frag.appendChild(fin);
+  zone.appendChild(frag);
+  reveler();
+}
+
+function fermerAlbum(){
+  albumOuvert = -1;
+  document.querySelectorAll('.carte').forEach(c=>c.classList.remove('active'));
+  document.getElementById('zone').innerHTML = '';
+  document.getElementById('grille').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function reveler(){
+  if(!('IntersectionObserver' in window)){
+    document.querySelectorAll('.chapitre').forEach(el=>el.classList.add('vu')); return;
+  }
+  const obs = new IntersectionObserver((es)=>{
+    es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('vu'); obs.unobserve(e.target); } });
+  }, { threshold:.15 });
+  document.querySelectorAll('.chapitre:not(.vu)').forEach(el=>obs.observe(el));
+}
+function majProg(){
+  const h=document.documentElement;
+  const p=h.scrollTop/(h.scrollHeight-h.clientHeight||1);
+  document.getElementById('progression').style.width=(p*100)+'%';
+}
+window.addEventListener('scroll', majProg, {passive:true});
+
+construireCartes();
+majProg();
+</script>
+</body>
+</html>
